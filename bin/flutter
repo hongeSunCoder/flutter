@@ -11,6 +11,9 @@
 #
 # -------------------------------------------------------------------------- #
 
+# ----------------------- hongesun ---------------------
+# stop execution once errors happen
+# ----------------------
 set -e
 
 # To debug the tool, you can uncomment the following lines to enable debug

@@ -182,6 +182,8 @@ function upgrade_flutter () (
   exit $?
 )
 
+
+# ---------------- hongesun ---------------------
 # This function is intended to be executed by entrypoints (e.g. `//bin/flutter`
 # and `//bin/dart`). PROG_NAME and BIN_DIR should already be set by those
 # entrypoints.
