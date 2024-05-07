@@ -347,7 +347,10 @@ enum TableCellVerticalAlignment {
 
   /// Cells with this alignment are sized to be as tall as the row, then made to fit the row.
   /// If all the cells have this alignment, then the row will have zero height.
-  fill
+  fill,
+
+  /// Cells with this alignment are sized to be the same height as the tallest cell in the row.
+  intrinsicHeight
 }
 
 /// A table where the columns and rows are sized to fit the contents of the cells.
@@ -797,7 +800,7 @@ class RenderTable extends RenderBox {
 
   @override
   double computeMaxIntrinsicHeight(double width) {
-    return computeMinIntrinsicHeight(width);
+    return getMinIntrinsicHeight(width);
   }
 
   double? _baselineDistance;
@@ -1048,6 +1051,7 @@ class RenderTable extends RenderBox {
             case TableCellVerticalAlignment.top:
             case TableCellVerticalAlignment.middle:
             case TableCellVerticalAlignment.bottom:
+            case TableCellVerticalAlignment.intrinsicHeight:
               final Size childSize = child.getDryLayout(BoxConstraints.tightFor(width: widths[x]));
               rowHeight = math.max(rowHeight, childSize.height);
             case TableCellVerticalAlignment.fill:
@@ -1126,6 +1130,7 @@ class RenderTable extends RenderBox {
             case TableCellVerticalAlignment.top:
             case TableCellVerticalAlignment.middle:
             case TableCellVerticalAlignment.bottom:
+            case TableCellVerticalAlignment.intrinsicHeight:
               child.layout(BoxConstraints.tightFor(width: widths[x]), parentUsesSize: true);
               rowHeight = math.max(rowHeight, child.size.height);
             case TableCellVerticalAlignment.fill:
@@ -1154,6 +1159,7 @@ class RenderTable extends RenderBox {
             case TableCellVerticalAlignment.bottom:
               childParentData.offset = Offset(positions[x], rowTop + rowHeight - child.size.height);
             case TableCellVerticalAlignment.fill:
+            case TableCellVerticalAlignment.intrinsicHeight:
               child.layout(BoxConstraints.tightFor(width: widths[x], height: rowHeight));
               childParentData.offset = Offset(positions[x], rowTop);
           }
@@ -1254,19 +1260,13 @@ class RenderTable extends RenderBox {
       return <DiagnosticsNode>[DiagnosticsNode.message('table is empty')];
     }
 
-    final List<DiagnosticsNode> children = <DiagnosticsNode>[];
-    for (int y = 0; y < rows; y += 1) {
-      for (int x = 0; x < columns; x += 1) {
-        final int xy = x + y * columns;
-        final RenderBox? child = _children[xy];
-        final String name = 'child ($x, $y)';
-        if (child != null) {
-          children.add(child.toDiagnosticsNode(name: name));
-        } else {
-          children.add(DiagnosticsProperty<Object>(name, null, ifNull: 'is null', showSeparator: false));
-        }
-      }
-    }
-    return children;
+    return <DiagnosticsNode>[
+      for (int y = 0; y < rows; y += 1)
+        for (int x = 0; x < columns; x += 1)
+          if (_children[x + y * columns] case final RenderBox child)
+            child.toDiagnosticsNode(name: 'child ($x, $y)')
+          else
+            DiagnosticsProperty<Object>('child ($x, $y)', null, ifNull: 'is null', showSeparator: false),
+    ];
   }
 }
