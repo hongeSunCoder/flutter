@@ -1671,6 +1671,44 @@ void main() {
     expect(tester.widget<Container>(find.widgetWithText(Container, 'Item 1')).padding, const EdgeInsets.symmetric(horizontal: 12.0));
   });
 
+  testWidgets('PopupMenu default padding', (WidgetTester tester) async {
+    final Key popupMenuButtonKey = UniqueKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: PopupMenuButton<String>(
+              key: popupMenuButtonKey,
+              child: const Text('button'),
+              onSelected: (String result) { },
+              itemBuilder: (BuildContext context) {
+                return <PopupMenuEntry<String>>[
+                   const PopupMenuItem<String>(
+                    value: '0',
+                    enabled: false,
+                    child: Text('Item 0'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: '1',
+                    child: Text('Item 1'),
+                  ),
+                ];
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Show the menu.
+    await tester.tap(find.byKey(popupMenuButtonKey));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Check popup menu padding.
+    final SingleChildScrollView popupMenu = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
+    expect(popupMenu.padding, const EdgeInsets.symmetric(vertical: 8.0));
+  });
+
   testWidgets('Material2 - PopupMenuItem default padding', (WidgetTester tester) async {
     final Key popupMenuButtonKey = UniqueKey();
     await tester.pumpWidget(
@@ -1707,6 +1745,45 @@ void main() {
 
     expect(tester.widget<Container>(find.widgetWithText(Container, 'Item 0')).padding, const EdgeInsets.symmetric(horizontal: 16.0));
     expect(tester.widget<Container>(find.widgetWithText(Container, 'Item 1')).padding, const EdgeInsets.symmetric(horizontal: 16.0));
+  });
+
+  testWidgets('Material2 - PopupMenuItem default padding', (WidgetTester tester) async {
+    final Key popupMenuButtonKey = UniqueKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: false),
+        home: Scaffold(
+          body: Center(
+            child: PopupMenuButton<String>(
+              key: popupMenuButtonKey,
+              child: const Text('button'),
+              onSelected: (String result) { },
+              itemBuilder: (BuildContext context) {
+                return <PopupMenuEntry<String>>[
+                   const PopupMenuItem<String>(
+                    value: '0',
+                    enabled: false,
+                    child: Text('Item 0'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: '1',
+                    child: Text('Item 1'),
+                  ),
+                ];
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Show the menu.
+    await tester.tap(find.byKey(popupMenuButtonKey));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Check popup menu padding.
+    final SingleChildScrollView popupMenu = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
+    expect(popupMenu.padding, const EdgeInsets.symmetric(vertical: 8.0));
   });
 
   testWidgets('PopupMenuItem custom padding', (WidgetTester tester) async {
@@ -4164,6 +4241,49 @@ void main() {
       matching: find.byType(RichText),
     ));
     expect(iconText.text.style?.color, Colors.red);
+  });
+
+  testWidgets("Popup menu child's InkWell borderRadius", (WidgetTester tester) async {
+    final BorderRadius borderRadius = BorderRadius.circular(20);
+
+    Widget buildPopupMenu({required BorderRadius? borderRadius}) {
+      return MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: PopupMenuButton<String>(
+              borderRadius: borderRadius,
+              itemBuilder: (_) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'value',
+                  child: Text('Item 0'),
+                ),
+              ],
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text('Pop up menu'),
+                  Icon(Icons.arrow_drop_down),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Popup menu with default null borderRadius.
+    await tester.pumpWidget(buildPopupMenu(borderRadius: null));
+    await tester.pumpAndSettle();
+
+    InkWell inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(inkWell.borderRadius, isNull);
+
+    // Popup menu with fixed borderRadius.
+    await tester.pumpWidget(buildPopupMenu(borderRadius: borderRadius));
+    await tester.pumpAndSettle();
+
+    inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(inkWell.borderRadius, borderRadius);
   });
 }
 
